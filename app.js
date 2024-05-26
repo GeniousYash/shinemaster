@@ -1,5 +1,6 @@
-const express = require("express");
+const express = require("express");        
 // const dotenv = require('dotenv').config();
+
 
 const mongoose = require("mongoose");
 // const pathconnect = process.env.connect;
@@ -8,27 +9,38 @@ const mongoose = require("mongoose");
 // }
 
 
-// const productRouter = require('./routes/productRouter');
+mongoose.connect("mongodb+srv://singhyash3012:shine@cluster0.jv193se.mongodb.net/shinemaster?retryWrites=true&w=majority&appName=Cluster0");
 
 
-const app = express();
-// const PORT = process.env.PORT || 4000;
-const PORT = 4000;
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
+const app = express();
+const PORT = 4000;
 const cors = require("cors");
 
-app.use(express.json()); 
-app.use(cors());
-// app.use("/addproduct",productRouter);
 
-mongoose.connect("mongodb+srv://singhyash3012:shine@cluster0.jv193se.mongodb.net/shinemaster?retryWrites=true&w=majority&appName=Cluster0");
+const toiletcleanerRouter = require("./routes/toiletcleanerrouter");
+const floorcleanerRouter = require("./routes/floorrouter");
+const glasscleanerRouter = require("./routes/glassrouter");
+const airfreshnerRouter = require("./routes/airfreshnerrouter");
+const bathroomcleanerRouter = require("./routes/bathroomrouter");
+
+
+app.use(express.json());
+app.use(cors());
+app.use("/toiletcleaner",toiletcleanerRouter);
+app.use("/floorcleaner",floorcleanerRouter);
+app.use("/glasscleaner",glasscleanerRouter);
+app.use("/airfreshner",airfreshnerRouter);
+app.use("/bathroomcleaner",bathroomcleanerRouter);
+
 
 // API connection
 app.get("/",(req,res)=>{
-     res.send("Express App is running");
+     res.send("ShineMaster App is running");
 });
+
 
 // Image storage engine
 const storage = multer.diskStorage({
@@ -36,11 +48,12 @@ const storage = multer.diskStorage({
      filename: (req, file, cb) => {
           return cb(null, `${file.filename}_${Date.now()}${path.extname(file.originalname)}`)
      }
-})
+});
 
-const upload = multer({storage:storage})
+
 // creating upload endpoint for images
-app.use('/images', express.static('upload/images'))
+const upload = multer({storage:storage})
+app.use('/images', express.static('upload/images'));
 app.post('/upload', upload.single('product'), (req,res)=>{
      res.json({
           success: 1,
@@ -80,23 +93,22 @@ const Product = mongoose.model("Product",{
      },
      available: {
           type: Boolean,
-          default: true,
+          default: false,
      },
 });
 
-// creating api for add product
 
+// creating api for add product
 app.post('/addproduct', async(req, res)=>{
      let products = await Product.find({});
      let id;
      if(products.length>0){
           let last_product_array = products.slice(-1);
           let last_product = last_product_array[0];
-          id = last_product.id +1;
+          id = last_product.id + 1;
      }else{
           id=1;
      }
-
      const product = new Product({
           id: req.body.id,
           name: req.body.name,
@@ -111,28 +123,30 @@ app.post('/addproduct', async(req, res)=>{
      res.json({
           success: true,
           name: req.body.name,
-     })
-})
+     });
+});
 
 
 // creating api for deleting products
 app.post('/removeproduct', async(req,res)=>{
      await Product.findOneAndDelete({id:req.body.id});
-     console.log("Remove");
+     // console.log("Remove");
      res.json({
           success: true,
           name: req.body.name,
      })
-})
+});
+
 
 // creating api to get all products
 app.get('/allproducts',async(req,res)=>{
      let products = await Product.find({})
-          console.log("All Product Fetched");
-          res.send(products);
+     // console.log("All Product Fetched");
+     res.send(products);
 });
 
-// Schema for User model
+
+// Schema for User model;
 const User = mongoose.model("User",{
      name:{
           type:String,
@@ -155,6 +169,7 @@ const User = mongoose.model("User",{
      },
 });
 
+
 // creating endpoint for registration
 app.post('/signup', async(req,res)=>{
      let check = await User.findOne({email:req.body.email});
@@ -166,21 +181,21 @@ app.post('/signup', async(req,res)=>{
           cart[i] = 0;
      }
      const user = new User({
-          name:req.body.username,
+          name:req.body.name,
           email:req.body.email,
           password:req.body.password,
           cartData: cart,
      })
      await user.save();
-
      const data = {
           user:{
                id:user.id
           }
      }
      const token = jwt.sign(data, 'secreat_ecom');
-     res.json({success: true, token})
-})
+     res.json({success: true, token});
+});
+
 
 // creating endpoint for user login
 app.post('/login', async(req,res)=>{
@@ -201,9 +216,8 @@ app.post('/login', async(req,res)=>{
      }else{
           res.json({success:false, errors:"Wrong Email Address"});
      }
-})
+});
 
-// 
 
 app.listen(PORT, async(error) =>{
      try{
@@ -212,8 +226,7 @@ app.listen(PORT, async(error) =>{
      } catch(error){
           console.error("Error connecting to MongoDB:", error);
      }
-})
-
+});
 
 
 // mongodb+srv://singhyash3012:shine@cluster0.jv193se.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
