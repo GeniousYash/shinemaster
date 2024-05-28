@@ -19,7 +19,7 @@ const app = express();
 const PORT = 4000;
 const cors = require("cors");
 
-
+const OwenersRouter = require('./routes/OwenerRouter');
 const toiletcleanerRouter = require("./routes/toiletcleanerrouter");
 const floorcleanerRouter = require("./routes/floorrouter");
 const glasscleanerRouter = require("./routes/glassrouter");
@@ -34,6 +34,7 @@ app.use("/floorcleaner",floorcleanerRouter);
 app.use("/glasscleaner",glasscleanerRouter);
 app.use("/airfreshner",airfreshnerRouter);
 app.use("/bathroomcleaner",bathroomcleanerRouter);
+app.use("/oweners",OwenersRouter);
 
 
 // API connection
@@ -144,6 +145,8 @@ app.get('/allproducts',async(req,res)=>{
      // console.log("All Product Fetched");
      res.send(products);
 });
+
+
 
 
 // Schema for User model;
